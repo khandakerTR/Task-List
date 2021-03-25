@@ -110,8 +110,6 @@ class TaskListViewController: UITableViewController, UITextFieldDelegate {
             print("Eorrr Loading Data:\(error)")
         }
     }
-    
- 
 }
 
 //code for search bar
@@ -130,6 +128,7 @@ extension TaskListViewController: UISearchBarDelegate {
         }
         tableView.reloadData()
     }
+    //remove keyboard 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text?.count == 0 {
             loadItem()
