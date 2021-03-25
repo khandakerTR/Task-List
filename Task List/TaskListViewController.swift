@@ -6,20 +6,19 @@
 //
 
 import UIKit
-
+import CoreData
 class TaskListViewController: UITableViewController, UITextFieldDelegate {
     
     var itemArray = [Item]()
+    //NSCoder
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Item.plist")
+    //core data
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
-        print(dataFilePath)
+        print(dataFilePath!)
         loadItem()
-        
-        
     }
     
     //data source method
@@ -45,6 +44,9 @@ class TaskListViewController: UITableViewController, UITextFieldDelegate {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
+        //delete Sqlite
+        //        context.delete(itemArray[indexPath.row])
+        //        itemArray.remove(at: indexPath.row)
         itemArray[indexPath.row].done =  !itemArray[indexPath.row].done
         saveItem()
     }
@@ -69,8 +71,11 @@ class TaskListViewController: UITableViewController, UITextFieldDelegate {
             if !textField.isEmpty{
                 if !textField.trimmingCharacters(in: .whitespaces).isEmpty {
                     print(textField)
-                    var newItem = Item ()
+                    
+                    
+                    var newItem = Item(context: self.context)
                     newItem.title = textField
+                    newItem.done = false
                     self.itemArray.append(newItem)
                     self.saveItem()
                 }  
@@ -85,28 +90,24 @@ class TaskListViewController: UITableViewController, UITextFieldDelegate {
         
         
     }
-//save data
+    //save data
     func saveItem () {
-        let encoder = PropertyListEncoder()
+        
         do {
-            let data = try encoder.encode(self.itemArray)
-            try data.write(to: self.dataFilePath!)
+            try context.save()
         }catch {
-            print("Saving Eorror Cause : \(error)")
+            print("Error Saving Context \(error)")
         }
         
         self.tableView.reloadData()
     }
-// load data
+    // load data
     func loadItem() {
-        if let data = try? Data(contentsOf: dataFilePath!) {
-        let decoder = PropertyListDecoder()
-            do {
-                itemArray = try decoder.decode([Item].self, from: data)
-            }catch {
-                print("Load Error Cause: \(error)")
-            }
-           
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        do {
+            itemArray = try  context.fetch(request )
+        }catch{
+            print("Eorrr Loading Data:\(error)")
+        }
     }
-}
 }
