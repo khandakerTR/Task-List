@@ -110,4 +110,33 @@ class TaskListViewController: UITableViewController, UITextFieldDelegate {
             print("Eorrr Loading Data:\(error)")
         }
     }
+    
+ 
+}
+
+//code for search bar
+extension TaskListViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        print(searchBar.text!)
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@",searchBar.text!)
+        request.predicate = predicate
+        let sort = NSSortDescriptor(key: "title", ascending: true)
+        request.sortDescriptors = [sort]
+        do {
+            itemArray = try  context.fetch(request )
+        }catch{
+            print("Eorrr Loading Data:\(error)")
+        }
+        tableView.reloadData()
+    }
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItem()
+            tableView.reloadData()
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+    }
 }
