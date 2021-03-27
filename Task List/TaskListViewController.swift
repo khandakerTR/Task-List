@@ -10,6 +10,11 @@ import CoreData
 class TaskListViewController: UITableViewController, UITextFieldDelegate {
     
     var itemArray = [Item]()
+    var selectedCatagory: Category? {
+        didSet {
+            loadItem()
+        }
+    }
     //NSCoder
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Item.plist")
     //core data
@@ -104,11 +109,14 @@ class TaskListViewController: UITableViewController, UITextFieldDelegate {
     // load data
     func loadItem() {
         let request: NSFetchRequest<Item> = Item.fetchRequest()
+        let predicate = NSPredicate(format: "parentCategory.name MATCHES %@",selectedCatagory!.name!)
+        request.predicate = predicate
         do {
             itemArray = try  context.fetch(request )
         }catch{
             print("Eorrr Loading Data:\(error)")
         }
+        tableView.reloadData()
     }
 }
 
@@ -128,13 +136,12 @@ extension TaskListViewController: UISearchBarDelegate {
         }
         tableView.reloadData()
     }
-    //remove keyboard 
+    //remove keyboard
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text?.count == 0 {
             loadItem()
-            tableView.reloadData()
             DispatchQueue.main.async {
-                searchBar.resignFirstResponder()
+            searchBar.resignFirstResponder()
             }
         }
     }
